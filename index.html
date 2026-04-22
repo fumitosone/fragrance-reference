@@ -210,41 +210,6 @@
       font-weight: 500;
     }
 
-    /* ═══════════════ NOTICE BAR (画像整備完了後に削除) ═══════════════ */
-    .notice-bar {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 10px 32px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 12.5px;
-      letter-spacing: 0.04em;
-      color: var(--accent-dark);
-      background: linear-gradient(90deg,
-        rgba(165, 118, 46, 0.04) 0%,
-        rgba(165, 118, 46, 0.08) 50%,
-        rgba(165, 118, 46, 0.04) 100%);
-      border-bottom: 1px solid var(--border);
-    }
-    .notice-icon {
-      display: inline-flex;
-      color: var(--accent);
-      flex-shrink: 0;
-    }
-    .notice-icon svg {
-      width: 15px;
-      height: 15px;
-      display: block;
-    }
-    .notice-text {
-      font-family: 'Noto Serif JP', 'DM Sans', serif;
-      font-weight: 400;
-    }
-    @media (max-width: 640px) {
-      .notice-bar { padding: 8px 20px; font-size: 12px; }
-    }
-
     .filter-bar {
       max-width: 1400px;
       margin: 0 auto;
@@ -973,19 +938,6 @@
       <div class="result-count" id="result-count"></div>
     </div>
   </header>
-
-  <!-- ════════ TEMPORARY NOTICE (画像整備完了後、このブロックごと削除してください) ════════ -->
-  <div class="notice-bar">
-    <span class="notice-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <circle cx="12" cy="12" r="9"/>
-        <line x1="12" y1="8" x2="12" y2="12"/>
-        <circle cx="12" cy="16" r="0.5" fill="currentColor"/>
-      </svg>
-    </span>
-    <span class="notice-text">現在、画像は整備中です。順次追加してまいります。</span>
-  </div>
-  <!-- ════════ END TEMPORARY NOTICE ════════ -->
 
   <div class="filter-bar">
     <div class="filter-pills" id="filter-bar">
