@@ -27,6 +27,27 @@
       --divider:       #ece6d8;
       --shadow:        0 2px 12px rgba(42, 36, 30, 0.06);
       --shadow-hover:  0 12px 40px rgba(42, 36, 30, 0.12);
+
+      /* Category / Type タグ色 */
+      --tag-citrus:    #fac775;
+      --tag-aldehydic: #ef9f27;
+      --tag-floral:    #ed93b1;
+      --tag-green:     #5dcaa5;
+      --tag-aquatic:   #85b7eb;
+      --tag-herbal:    #c0dd97;
+      --tag-spicy:     #97c459;
+      --tag-woody:     #f0997b;
+      --tag-amber:     #993c1d;
+      --tag-animalic:  #86867f;
+      --tag-musk:      #d3d1c7;
+      --tag-powdery:   #ccc9f4;
+      --tag-gourmand:  #aea8eb;
+      --tag-fruity:    #f4c0d1;
+      --tag-balsamic:  #c9a576;   /* 仮色（未指定） */
+      --tag-solvent:   #c8c4bb;   /* 仮色（未指定） */
+      --tag-raw:       #9fe1cb;
+      --tag-natural:   #c0dd97;
+      --tag-compound:  #b5d4f4;
     }
 
     html, body {
@@ -496,6 +517,180 @@
     }
     .view-btn svg { width: 16px; height: 16px; display: block; }
 
+    /* ═══════════════ TAG CLOUD TOGGLE ═══════════════ */
+    .tag-cloud-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-strong);
+      border-radius: 2px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+    .tag-cloud-toggle:hover { color: var(--accent-dark); border-color: var(--accent); }
+    .tag-cloud-toggle.active {
+      background: var(--ink-strong);
+      border-color: var(--ink-strong);
+      color: var(--bg);
+    }
+    .tag-cloud-toggle svg { width: 14px; height: 14px; }
+
+    /* ═══════════════ TAG CLOUD PANEL ═══════════════ */
+    .tag-cloud {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 22px 32px 26px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-soft);
+      animation: tagCloudFadeIn 0.3s ease both;
+    }
+    .tag-cloud[hidden] { display: none; }
+    @keyframes tagCloudFadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .tag-cloud-header {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .tag-cloud-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--ink-strong);
+      letter-spacing: 0.04em;
+    }
+    .tag-cloud-subtitle {
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .tag-cloud-clear {
+      margin-left: auto;
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent-dark);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .tag-cloud-clear:hover { background: var(--accent); color: white; }
+    .tag-cloud-clear[hidden] { display: none; }
+
+    .tag-cloud-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 16px;
+      align-items: baseline;
+      max-height: 40vh;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+    .cloud-tag {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+      padding: 3px 8px;
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      color: var(--ink);
+      background: transparent;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, transform 0.15s;
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+    }
+    .cloud-tag:hover {
+      background: var(--accent-pale);
+      color: var(--accent-dark);
+      transform: translateY(-1px);
+    }
+    .cloud-tag.active {
+      background: var(--ink-strong);
+      color: var(--bg);
+    }
+    .cloud-tag.active:hover {
+      background: var(--accent-dark);
+      color: white;
+    }
+    .cloud-tag .count {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-soft);
+      font-weight: 400;
+      letter-spacing: 0;
+    }
+    .cloud-tag:hover .count { color: var(--accent-dark); }
+    .cloud-tag.active .count { color: rgba(255, 255, 255, 0.6); }
+
+    /* 結果件数エリアのactive-tag インジケータ */
+    .active-tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 8px;
+      padding: 3px 8px 3px 10px;
+      background: var(--ink-strong);
+      color: var(--bg);
+      border-radius: 999px;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      font-weight: 500;
+      font-family: 'Cormorant Garamond', serif;
+      text-transform: none;
+    }
+    .active-tag-chip::before {
+      content: '◆';
+      font-size: 8px;
+      color: var(--accent-light);
+    }
+    .active-tag-chip .chip-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px; height: 16px;
+      margin-left: 2px;
+      margin-right: -4px;
+      border-radius: 50%;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      color: var(--bg);
+      opacity: 0.7;
+      transition: opacity 0.2s, background 0.2s;
+      font-size: 10px;
+      line-height: 1;
+    }
+    .active-tag-chip .chip-close:hover {
+      opacity: 1;
+      background: rgba(255,255,255,0.15);
+    }
+
     /* ═══════════════ GRID ═══════════════ */
     .grid {
       max-width: 1400px;
@@ -653,8 +848,7 @@
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
     }
-    .list-type-tags .type-tag.category { background: #ffa53c; color: #2a1a00; }
-    .list-type-tags .type-tag.type { background: #64b4a0; color: #002a22; }
+    /* リスト内の色は .tag--{name} を継承 */
 
     .list-descriptors {
       display: flex;
@@ -808,12 +1002,29 @@
       font-weight: 500;
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
+      /* 背景色・文字色は .tag--{name} 側で指定 */
     }
-    .type-tag.category { background: rgba(255, 165, 60, 0.85); color: #2a1a00; }
-    .type-tag.type {
-      background: rgba(100, 180, 160, 0.85);
-      color: #002a22;
-    }
+
+    /* ═══════════════ CATEGORY / TYPE タグ色 ═══════════════ */
+    .tag--citrus    { background: var(--tag-citrus);    color: #2a1f08; }
+    .tag--aldehydic { background: var(--tag-aldehydic); color: #2a1700; }
+    .tag--floral    { background: var(--tag-floral);    color: #3a1220; }
+    .tag--green     { background: var(--tag-green);     color: #0c2e20; }
+    .tag--aquatic   { background: var(--tag-aquatic);   color: #0c1e34; }
+    .tag--herbal    { background: var(--tag-herbal);    color: #1a2e12; }
+    .tag--spicy     { background: var(--tag-spicy);     color: #162a08; }
+    .tag--woody     { background: var(--tag-woody);     color: #2e1408; }
+    .tag--amber     { background: var(--tag-amber);     color: #fbeadb; }
+    .tag--animalic  { background: var(--tag-animalic);  color: #f5f2ed; }
+    .tag--musk      { background: var(--tag-musk);      color: #2a241e; }
+    .tag--powdery   { background: var(--tag-powdery);   color: #1f1c3a; }
+    .tag--gourmand  { background: var(--tag-gourmand);  color: #1a1540; color: #1a1540; }
+    .tag--fruity    { background: var(--tag-fruity);    color: #3a1220; }
+    .tag--balsamic  { background: var(--tag-balsamic);  color: #2e1e0a; }
+    .tag--solvent   { background: var(--tag-solvent);   color: #2a241e; }
+    .tag--raw       { background: var(--tag-raw);       color: #0c2e24; }
+    .tag--natural   { background: var(--tag-natural);   color: #1a2e12; }
+    .tag--compound  { background: var(--tag-compound);  color: #0c1e34; }
 
     /* ─── 右ペイン: コンテンツ ─── */
     .card-content {
@@ -1147,9 +1358,14 @@
     }
     @media (max-width: 640px) {
       .header-inner { padding: 16px 20px; }
-      .filter-bar { padding: 12px 20px; }
+      .filter-bar { padding: 12px 20px; gap: 8px; }
       .grid { padding: 24px 20px; }
       .list { padding: 16px 8px 40px; }
+
+      /* タグクラウド モバイル調整 */
+      .tag-cloud { padding: 18px 20px 22px; }
+      .tag-cloud-tags { max-height: 35vh; gap: 3px 12px; }
+      .tag-cloud-title { font-size: 16px; }
 
       /* カードを縦並びに切り替え */
       .card { grid-template-columns: 1fr; min-height: 0; }
@@ -1241,6 +1457,13 @@
     <div class="filter-pills" id="filter-bar">
       <button class="pill active" data-filter="all">All</button>
     </div>
+    <button class="tag-cloud-toggle" id="tag-cloud-toggle" aria-label="タグクラウドを表示" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <path d="M20.6 13.4L13.5 6.3c-.3-.3-.7-.5-1.1-.5H6c-1.1 0-2 .9-2 2v6.4c0 .4.2.8.5 1.1l7.1 7.1c.8.8 2 .8 2.8 0l6.2-6.2c.8-.8.8-2 0-2.8z"/>
+        <circle cx="8.5" cy="10.5" r="1.2" fill="currentColor"/>
+      </svg>
+      <span>Tags</span>
+    </button>
     <div class="view-toggle" role="group" aria-label="View mode">
       <button class="view-btn active" data-view="grid" aria-label="グリッド表示" title="グリッド表示">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
@@ -1261,6 +1484,19 @@
         </svg>
       </button>
     </div>
+  </div>
+
+  <!-- ═══════════════ TAG CLOUD ═══════════════ -->
+  <div class="tag-cloud" id="tag-cloud" hidden>
+    <div class="tag-cloud-header">
+      <div class="tag-cloud-title">Odor Descriptors</div>
+      <div class="tag-cloud-subtitle">クリックで絞り込み</div>
+      <button class="tag-cloud-clear" id="tag-cloud-clear" hidden>
+        <span>✕</span>
+        <span>フィルタ解除</span>
+      </button>
+    </div>
+    <div class="tag-cloud-tags" id="tag-cloud-tags"></div>
   </div>
 
   <div id="items-container" class="grid"></div>
@@ -1551,11 +1787,14 @@ let allFragrances = [];
 let activeFilter  = 'all';
 let searchQuery   = '';
 let viewMode      = 'grid'; // 'grid' | 'list'
+let activeTag     = null;   // タグクラウドで選択中のOdor Descriptor
 
 function initApp(data) {
   allFragrances = data;
   buildFilters();
   setupViewToggle();
+  buildTagCloud();
+  setupTagCloudToggle();
   renderItems();
   document.getElementById('search-input').addEventListener('input', e => {
     searchQuery = e.target.value.toLowerCase();
@@ -1573,6 +1812,82 @@ function setupViewToggle() {
       renderItems();
     });
   });
+}
+
+/* ═══════════════════════════════════════════
+   タグクラウド
+═══════════════════════════════════════════ */
+function buildTagCloud() {
+  const container = document.getElementById('tag-cloud-tags');
+  container.innerHTML = '';
+
+  // Odor Descriptorsの出現頻度を集計
+  const counts = {};
+  allFragrances.forEach(f => {
+    (f.odorDescriptors || []).forEach(d => {
+      const key = d.trim();
+      if (key) counts[key] = (counts[key] || 0) + 1;
+    });
+  });
+
+  // 出現頻度降順 → 同数ならアルファベット順
+  const entries = Object.entries(counts).sort((a, b) => {
+    if (b[1] !== a[1]) return b[1] - a[1];
+    return a[0].localeCompare(b[0]);
+  });
+
+  if (entries.length === 0) return;
+
+  // フォントサイズ計算（平方根スケーリング）
+  const maxCount = entries[0][1];
+  const minCount = entries[entries.length - 1][1];
+  const MIN_FONT = 13;
+  const MAX_FONT = 26;
+  const range = Math.max(1, maxCount - minCount);
+
+  entries.forEach(([tag, count]) => {
+    const scale = Math.sqrt((count - minCount) / range);
+    const fontSize = MIN_FONT + (MAX_FONT - MIN_FONT) * scale;
+
+    const btn = document.createElement('button');
+    btn.className = 'cloud-tag';
+    btn.style.fontSize = `${fontSize.toFixed(1)}px`;
+    btn.dataset.tag = tag;
+    btn.innerHTML = `${esc(tag)}<span class="count">${count}</span>`;
+    btn.addEventListener('click', () => toggleTag(tag));
+    container.appendChild(btn);
+  });
+}
+
+function toggleTag(tag) {
+  activeTag = (activeTag === tag) ? null : tag;
+  updateTagCloudUI();
+  renderItems();
+}
+
+function clearActiveTag() {
+  activeTag = null;
+  updateTagCloudUI();
+  renderItems();
+}
+
+function updateTagCloudUI() {
+  document.querySelectorAll('.cloud-tag').forEach(el => {
+    el.classList.toggle('active', el.dataset.tag === activeTag);
+  });
+  document.getElementById('tag-cloud-clear').hidden = !activeTag;
+}
+
+function setupTagCloudToggle() {
+  const toggleBtn = document.getElementById('tag-cloud-toggle');
+  const panel     = document.getElementById('tag-cloud');
+  toggleBtn.addEventListener('click', () => {
+    const willShow = panel.hidden;
+    panel.hidden = !willShow;
+    toggleBtn.classList.toggle('active', willShow);
+    toggleBtn.setAttribute('aria-expanded', String(willShow));
+  });
+  document.getElementById('tag-cloud-clear').addEventListener('click', clearActiveTag);
 }
 
 function buildFilters() {
@@ -1616,6 +1931,11 @@ function esc(s) {
     ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
 
+/** カテゴリ/タイプ名 → CSSクラス名（例: "Aldehydic" → "tag--aldehydic"）*/
+function tagClass(name) {
+  return 'tag--' + String(name || '').toLowerCase().replace(/\s+/g, '-');
+}
+
 /* ═══════════════════════════════════════════
    描画: バッチ式の無限スクロール
 ═══════════════════════════════════════════ */
@@ -1633,14 +1953,26 @@ function renderItems() {
   container.innerHTML = '';
   container.className = viewMode === 'grid' ? 'grid' : 'list';
 
-  // フィルター適用
+  // フィルター適用（カテゴリ + タグ + 検索）
   currentFiltered = allFragrances.filter(f => {
     const catOk  = activeFilter === 'all' || f.category === activeFilter;
+    const tagOk  = !activeTag || (f.odorDescriptors || []).includes(activeTag);
     const srchOk = matchesSearch(f, searchQuery);
-    return catOk && srchOk;
+    return catOk && tagOk && srchOk;
   });
 
-  document.getElementById('result-count').textContent = `${currentFiltered.length} / ${allFragrances.length} 件`;
+  // 件数 + アクティブタグチップ
+  const countEl = document.getElementById('result-count');
+  const countText = `${currentFiltered.length} / ${allFragrances.length} 件`;
+  if (activeTag) {
+    countEl.innerHTML = `${countText}<span class="active-tag-chip">${esc(activeTag)}<button class="chip-close" id="chip-close" aria-label="タグ解除">✕</button></span>`;
+    document.getElementById('chip-close').addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearActiveTag();
+    });
+  } else {
+    countEl.textContent = countText;
+  }
 
   if (currentFiltered.length === 0) {
     const emptyClass = viewMode === 'grid' ? 'no-results' : 'list-empty';
@@ -1742,8 +2074,8 @@ function buildCardHTML(f) {
         <div class="card-furigana">${esc(f.furigana || '')}</div>
         <div class="card-title">${esc(f.name)}</div>
         <div class="card-type-tags">
-          <span class="type-tag category">${esc(f.category)}</span>
-          <span class="type-tag type">${esc(f.type)}</span>
+          <span class="type-tag category ${tagClass(f.category)}">${esc(f.category)}</span>
+          <span class="type-tag type ${tagClass(f.type)}">${esc(f.type)}</span>
         </div>
       </div>
     </div>
@@ -1802,8 +2134,8 @@ function buildListRowHTML(f) {
       <div class="list-furigana">${esc(f.furigana || '')}</div>
       <div class="list-name">${esc(f.name)}</div>
       <div class="list-type-tags">
-        <span class="type-tag category">${esc(f.category)}</span>
-        <span class="type-tag type">${esc(f.type)}</span>
+        <span class="type-tag category ${tagClass(f.category)}">${esc(f.category)}</span>
+        <span class="type-tag type ${tagClass(f.type)}">${esc(f.type)}</span>
       </div>
     </div>
     <div class="list-descriptors">${descriptorsHtml}</div>
@@ -1851,8 +2183,13 @@ function openModal(f) {
 
   document.getElementById('m-furigana').textContent = f.furigana || '';
   document.getElementById('m-name').textContent = f.name;
-  document.getElementById('m-tag-category').textContent = f.category;
-  document.getElementById('m-tag-type').textContent = f.type;
+  const mCat = document.getElementById('m-tag-category');
+  const mTyp = document.getElementById('m-tag-type');
+  mCat.textContent = f.category;
+  mTyp.textContent = f.type;
+  // 既存の tag--* クラスを剥がして新規適用
+  mCat.className = `type-tag category ${tagClass(f.category)}`;
+  mTyp.className = `type-tag type ${tagClass(f.type)}`;
 
   document.getElementById('m-cas').textContent = `CAS ${f.cas}  ·  ${f.casSource || ''}`;
 
