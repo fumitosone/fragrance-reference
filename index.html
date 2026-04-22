@@ -58,6 +58,12 @@
     .lock-box {
       width: min(400px, 90vw);
       text-align: center;
+      /* 自動アンロック判定が済むまでは非表示（ロック画面の一瞬のフラッシュを防ぐ） */
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .lock-box.ready {
+      opacity: 1;
       animation: fadeUp 0.8s ease both;
     }
     @keyframes fadeUp {
@@ -124,12 +130,16 @@
     .lock-divider::before { left: -8px; }
     .lock-divider::after  { right: -8px; }
 
+    .pw-field-wrap {
+      position: relative;
+      margin-bottom: 14px;
+    }
     .pw-field {
       width: 100%;
       background: var(--card-bg);
       border: 1px solid var(--border-strong);
       border-radius: 2px;
-      padding: 14px 18px;
+      padding: 14px 46px 14px 18px;   /* 右側はトグルボタン分の余白 */
       color: var(--ink);
       font-family: 'DM Mono', monospace;
       font-size: 15px;
@@ -137,12 +147,42 @@
       text-align: center;
       outline: none;
       transition: border-color 0.3s, box-shadow 0.3s;
-      margin-bottom: 14px;
     }
     .pw-field::placeholder { color: var(--ink-soft); letter-spacing: 0.1em; font-size: 13px; }
     .pw-field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(165, 118, 46, 0.08); }
     .pw-field.error { border-color: #b54848; color: #8a2e2e; animation: shake 0.4s ease; }
     @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+
+    .pw-toggle {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      padding: 8px;
+      cursor: pointer;
+      color: var(--ink-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 2px;
+      transition: color 0.2s;
+    }
+    .pw-toggle:hover { color: var(--accent-dark); }
+    .pw-toggle:focus-visible {
+      outline: none;
+      color: var(--accent-dark);
+      box-shadow: 0 0 0 2px rgba(165, 118, 46, 0.25);
+    }
+    .pw-toggle svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+    .pw-toggle .icon-hide { display: none; }  /* 初期状態はshow（パスワード伏字）*/
+    .pw-toggle.showing .icon-show { display: none; }
+    .pw-toggle.showing .icon-hide { display: block; }
 
     .pw-btn {
       width: 100%;
@@ -1148,7 +1188,21 @@
     <h1 class="lock-title">Restricted<br><em>Access</em></h1>
     <p class="lock-sub">Member-only catalogue</p>
     <div class="lock-divider"></div>
-    <input type="password" id="pw-input" class="pw-field" placeholder="パスワードを入力" autocomplete="current-password">
+    <div class="pw-field-wrap">
+      <input type="password" id="pw-input" class="pw-field" placeholder="パスワードを入力" autocomplete="current-password">
+      <button type="button" id="pw-toggle" class="pw-toggle" aria-label="パスワードを表示">
+        <svg class="icon-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        <svg class="icon-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M17.94 17.94A10.5 10.5 0 0 1 12 20c-6.5 0-10-7-10-7a18.5 18.5 0 0 1 5.06-5.94"/>
+          <path d="M9.9 4.24A9.5 9.5 0 0 1 12 4c6.5 0 10 7 10 7a18.7 18.7 0 0 1-2.16 3.19"/>
+          <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+          <line x1="1" y1="1" x2="23" y2="23"/>
+        </svg>
+      </button>
+    </div>
     <button id="pw-btn" class="pw-btn">Enter</button>
     <div id="pw-status" class="pw-status"></div>
   </div>
@@ -1308,6 +1362,7 @@
    Web Crypto API : AES-256-GCM 復号
 ═══════════════════════════════════════════ */
 const b64ToBytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const bytesToB64 = bytes => btoa(String.fromCharCode.apply(null, new Uint8Array(bytes)));
 
 async function deriveKey(password, salt) {
   const enc = new TextEncoder();
@@ -1318,25 +1373,76 @@ async function deriveKey(password, salt) {
     { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
     baseKey,
     { name: 'AES-GCM', length: 256 },
-    false, ['decrypt']
+    true,         /* extractable=true: "24時間ログイン維持"で保存するため */
+    ['decrypt']
   );
 }
 
-async function decryptData(password, encObj) {
-  const salt    = b64ToBytes(encObj.salt);
+/** 暗号ファイルと鍵から平文データを復号 */
+async function decryptWithKey(key, encObj) {
   const iv      = b64ToBytes(encObj.iv);
   const authTag = b64ToBytes(encObj.authTag);
   const data    = b64ToBytes(encObj.data);
   const ciphertext = new Uint8Array(data.length + authTag.length);
   ciphertext.set(data, 0);
   ciphertext.set(authTag, data.length);
-  const key = await deriveKey(password, salt);
   const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
   return JSON.parse(new TextDecoder().decode(plain));
 }
 
+/** パスワードを使って復号。鍵と平文データの両方を返す（鍵は保存用） */
+async function decryptWithPassword(password, encObj) {
+  const salt = b64ToBytes(encObj.salt);
+  const key = await deriveKey(password, salt);
+  const data = await decryptWithKey(key, encObj);
+  return { data, key };
+}
+
 /* ═══════════════════════════════════════════
-   ロード & 認証
+   24時間自動ログイン: localStorage に AES鍵を保存
+═══════════════════════════════════════════ */
+const AUTH_STORAGE_KEY = 'fragranceLib_auth_v1';
+const AUTH_EXPIRY_MS   = 24 * 60 * 60 * 1000;  // 24時間
+
+async function saveAuthKey(key) {
+  try {
+    // AESキーを生バイト列 → Base64 → localStorage
+    const exported = await crypto.subtle.exportKey('raw', key);
+    const payload = {
+      k:   bytesToB64(exported),
+      exp: Date.now() + AUTH_EXPIRY_MS,
+    };
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(payload));
+  } catch {
+    // Private browsing等でlocalStorageが使えない場合は無視（自動ログイン無効になるだけ）
+  }
+}
+
+async function loadAuthKey() {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) return null;
+    const { k, exp } = JSON.parse(raw);
+    if (!k || !exp || Date.now() > exp) {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      return null;
+    }
+    const keyBytes = b64ToBytes(k);
+    return await crypto.subtle.importKey(
+      'raw', keyBytes, { name: 'AES-GCM' }, true, ['decrypt']
+    );
+  } catch {
+    try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch {}
+    return null;
+  }
+}
+
+function clearAuthKey() {
+  try { localStorage.removeItem(AUTH_STORAGE_KEY); } catch {}
+}
+
+/* ═══════════════════════════════════════════
+   起動シーケンス
 ═══════════════════════════════════════════ */
 let ENC_DATA = null;
 
@@ -1345,15 +1451,52 @@ async function loadEncData() {
     const res = await fetch('fragrances.enc.json');
     if (!res.ok) throw new Error('Not found');
     ENC_DATA = await res.json();
+    return true;
   } catch {
     document.getElementById('pw-status').textContent =
       '⚠ fragrances.enc.json が読み込めません。ローカルサーバー経由でアクセスしてください。';
+    return false;
   }
 }
 
+/** 画面を App に切り替える */
+function unlockUI(fragrances) {
+  document.getElementById('lock-screen').classList.add('hidden');
+  document.getElementById('app').classList.add('visible');
+  initApp(fragrances);
+}
+
+/** 起動時の自動ログイン試行 → 失敗時はパスワードフォームを表示 */
+async function bootstrap() {
+  const loaded = await loadEncData();
+  if (!loaded) {
+    // データ読み込み失敗: ロックボックスは表示してエラーメッセージが見えるようにする
+    document.querySelector('.lock-box').classList.add('ready');
+    return;
+  }
+
+  // localStorage の鍵で自動アンロックを試行
+  const savedKey = await loadAuthKey();
+  if (savedKey) {
+    try {
+      const fragrances = await decryptWithKey(savedKey, ENC_DATA);
+      // 認証期限を延長（利用のたびにリセット）
+      await saveAuthKey(savedKey);
+      unlockUI(fragrances);
+      return;
+    } catch {
+      // 鍵が古い/無効 → 破棄してパスワード画面へ
+      clearAuthKey();
+    }
+  }
+
+  // 自動アンロック不可 → パスワードフォームを表示
+  document.querySelector('.lock-box').classList.add('ready');
+}
+
 async function tryUnlock() {
-  const btn   = document.getElementById('pw-btn');
-  const input = document.getElementById('pw-input');
+  const btn    = document.getElementById('pw-btn');
+  const input  = document.getElementById('pw-input');
   const status = document.getElementById('pw-status');
   const pw = input.value;
   if (!pw || !ENC_DATA) return;
@@ -1364,10 +1507,10 @@ async function tryUnlock() {
   status.className = 'pw-status';
 
   try {
-    const fragrances = await decryptData(pw, ENC_DATA);
-    document.getElementById('lock-screen').classList.add('hidden');
-    document.getElementById('app').classList.add('visible');
-    initApp(fragrances);
+    const { data, key } = await decryptWithPassword(pw, ENC_DATA);
+    // 成功 → 24時間用の鍵を保存
+    await saveAuthKey(key);
+    unlockUI(data);
   } catch {
     input.classList.add('error');
     status.textContent = 'パスワードが正しくありません';
@@ -1380,6 +1523,26 @@ async function tryUnlock() {
 
 document.getElementById('pw-btn').addEventListener('click', tryUnlock);
 document.getElementById('pw-input').addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+
+/* パスワード表示/非表示トグル */
+(() => {
+  const toggle = document.getElementById('pw-toggle');
+  const input  = document.getElementById('pw-input');
+  toggle.addEventListener('click', () => {
+    const showing = input.type === 'text';
+    if (showing) {
+      input.type = 'password';
+      toggle.classList.remove('showing');
+      toggle.setAttribute('aria-label', 'パスワードを表示');
+    } else {
+      input.type = 'text';
+      toggle.classList.add('showing');
+      toggle.setAttribute('aria-label', 'パスワードを隠す');
+    }
+    // トグル後はフォーカスを入力欄に戻す（ユーザーがそのまま入力継続できるように）
+    input.focus();
+  });
+})();
 
 /* ═══════════════════════════════════════════
    アプリ本体
@@ -1721,7 +1884,7 @@ document.getElementById('modal-overlay').addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-loadEncData();
+bootstrap();
 </script>
 </body>
 </html>
