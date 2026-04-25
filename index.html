@@ -860,6 +860,18 @@
     }
 
     .list-main { min-width: 0; }
+    .list-code {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--ink-muted);
+      background: var(--bg-soft);
+      padding: 1px 7px;
+      border-radius: 2px;
+      margin-bottom: 3px;
+      border: 1px solid var(--border);
+    }
     .list-furigana {
       font-family: 'Noto Serif JP', serif;
       font-size: 11px;
@@ -1024,6 +1036,20 @@
       margin-bottom: 3px;
       font-weight: 400;
       text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+    }
+    .card-code {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: #ffffff;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      padding: 2px 8px;
+      border-radius: 2px;
+      margin-bottom: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
     .card-title {
       font-family: 'Cormorant Garamond', serif;
@@ -1257,6 +1283,20 @@
       color: #ffffff;
       z-index: 2;
     }
+    .modal-code {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: #ffffff;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      padding: 3px 10px;
+      border-radius: 2px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
     .modal-furigana {
       font-family: 'Noto Serif JP', serif;
       font-size: 13px;
@@ -1475,7 +1515,7 @@
       </div>
       <div class="search-wrap">
         <span class="search-icon">⌕</span>
-        <input type="search" id="search-input" class="search-input" placeholder="香料名・フリガナ・CAS・ノートで検索…">
+        <input type="search" id="search-input" class="search-input" placeholder="管理番号・香料名・フリガナ・CAS・ノートで検索…">
       </div>
       <div class="header-actions">
         <div class="result-count" id="result-count"></div>
@@ -1571,6 +1611,7 @@
         <div class="modal-image-placeholder" id="m-image-placeholder">no image</div>
         <div id="m-fav-slot"></div>
         <div class="modal-titleblock">
+          <div class="modal-code" id="m-code"></div>
           <div class="modal-furigana" id="m-furigana"></div>
           <div class="modal-name" id="m-name"></div>
           <div class="modal-type-tags">
@@ -1941,7 +1982,7 @@ function setActiveFilter(filterValue) {
 function matchesSearch(f, q) {
   if (!q) return true;
   return [
-    f.name, f.furigana, f.cas, f.category,
+    f.code, f.name, f.furigana, f.cas, f.category,
     ...(f.odorDescriptors || []),
     ...(f.blendsWith || []),
     f.description, f.usage,
@@ -2175,6 +2216,7 @@ function buildCardHTML(f) {
       ${imageHtml}
       ${favButtonHTML(f.id)}
       <div class="card-titleblock">
+        ${f.code ? `<div class="card-code">${esc(f.code)}</div>` : ''}
         <div class="card-furigana">${esc(f.furigana || '')}</div>
         <div class="card-title">${esc(f.name)}</div>
         <div class="card-type-tags">
@@ -2235,6 +2277,7 @@ function buildListRowHTML(f) {
   return `
     <div class="list-thumb">${imageHtml}${favButtonHTML(f.id)}</div>
     <div class="list-main">
+      ${f.code ? `<div class="list-code">${esc(f.code)}</div>` : ''}
       <div class="list-furigana">${esc(f.furigana || '')}</div>
       <div class="list-name">${esc(f.name)}</div>
       <div class="list-type-tags">
@@ -2286,6 +2329,9 @@ function openModal(f) {
   }
 
   document.getElementById('m-furigana').textContent = f.furigana || '';
+  const mCode = document.getElementById('m-code');
+  mCode.textContent = f.code || '';
+  mCode.style.display = f.code ? 'inline-block' : 'none';
   document.getElementById('m-name').textContent = f.name;
   const mCat = document.getElementById('m-tag-category');
   const mTyp = document.getElementById('m-tag-type');
